@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>장바구니 | 온라인 마켓</title>
+  <style>
+    body {
+      font-family: 'Noto Sans KR', sans-serif;
+      background-color: #f9f9f9;
+      padding: 20px;
+    }
+    h1, h2 {
+      text-align: center;
+    }
+    .cart-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px;
+      margin: 10px 0;
+      background-color: #fff;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+    }
+    .cart-item img {
+      height: 50px;
+      margin-right: 10px;
+    }
+    .cart-item .info {
+      flex-grow: 1;
+      display: flex;
+      align-items: center;
+    }
+    .cart-item button {
+      padding: 5px 10px;
+      background-color: #ff4d4d;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .cart-item button:hover {
+      background-color: #cc0000;
+    }
+    .footer {
+      text-align: center;
+      margin-top: 30px;
+    }
+    .footer button {
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #28a745;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .footer button:hover {
+      background-color: #1e7e34;
+    }
+  </style>
+</head>
+<body>
+  <h1>🛒 장바구니</h1>
+  <p style="text-align:center;"><a href="home.html">홈으로 돌아가기</a></p>
+  <h2 id="balance">잔액: </h2>
+  <div id="cart-container"></div>
+  <div class="footer">
+    <h2 id="total">총 합계: 0원</h2>
+    <button onclick="checkout()">결제하기</button>
+  </div>
+
+  <script>
+    if (!localStorage.getItem('balance')) {
+      localStorage.setItem('balance', '100000');
+    }
+
+    function renderCart() {
+      const cart = JSON.parse(localStorage.getItem('cart')) || [];
+      const container = document.getElementById('cart-container');
+      container.innerHTML = '';
+      let total = 0;
+      cart.forEach((item, index) => {
+        const itemDiv = document.createElement('div');
+        itemDiv.className = 'cart-item';
+
+        const infoDiv = document.createElement('div');
+        infoDiv.className = 'info';
+        const img = document.createElement('img');
+        img.src = item.image;
+        const text = document.createElement('span');
+        text.innerText = `${item.name} - ${item.price}원`;
+
+        infoDiv.appendChild(img);
+        infoDiv.appendChild(text);
+
+        const removeBtn = document.createElement('button');
+        removeBtn.innerText = '삭제';
+        removeBtn.onclick = () => removeItem(index);
+
+        itemDiv.appendChild(infoDiv);
+        itemDiv.appendChild(removeBtn);
+
+        container.appendChild(itemDiv);
+        total += parseInt(item.price);
+      });
+      document.getElementById('total').innerText = `총 합계: ${total}원`;
+      document.getElementById('balance').innerText = `잔액: ${localStorage.getItem('balance')}원`;
+    }
+
+    function removeItem(index) {
+      const cart = JSON.parse(localStorage.getItem('cart')) || [];
+      cart.splice(index, 1);
+      localStorage.setItem('cart', JSON.stringify(cart));
+      renderCart();
+    }
+
+    function checkout() {
+      const cart = JSON.parse(localStorage.getItem('cart')) || [];
+      const total = cart.reduce((sum, item) => sum + parseInt(item.price), 0);
+      let balance = parseInt(localStorage.getItem('balance'));
+
+      if (total > balance) {
+        alert('금액이 부족합니다.');
+        return;
+      }
+
+      balance -= total;
+      localStorage.setItem('balance', balance);
+      localStorage.removeItem('cart');
+      alert('결제가 완료되었습니다!');
+      renderCart();
+    }
+
+    window.onload = renderCart;
+  </script>
+</body>
+</html>
